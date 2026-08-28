@@ -1,24 +1,27 @@
-package ru.practicum.moviehub.store;
+package ru.practicum.moviehub.repository;
 
 import ru.practicum.moviehub.model.Movie;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class MoviesStore {
+
+public class MovieRepository {
     private final Map<Integer, Movie> movies = new HashMap<>();
-    private int nextId = 1;
+    private final AtomicInteger idGenerator = new AtomicInteger(1);
 
     public List<Movie> findAll() {
         return new ArrayList<>(movies.values());
     }
 
-    public Movie findById(int id) {
-        return movies.get(id);
+    public Optional<Movie> findById(int id) {
+        return Optional.ofNullable(movies.get(id));
     }
 
     public Movie save(Movie movie) {
-        movie.setId(nextId++);
-        movies.put(movie.getId(), movie);
+        int id = idGenerator.getAndIncrement();
+        movie.setId(id);
+        movies.put(id, movie);
         return movie;
     }
 
@@ -28,16 +31,12 @@ public class MoviesStore {
 
     public List<Movie> findByYear(int year) {
         return movies.values().stream()
-                .filter(m -> m.getYear() == year)
+                .filter(movie -> movie.getYear() == year)
                 .toList();
     }
 
     public void clear() {
         movies.clear();
-        nextId = 1;
-    }
-
-    public int size() {
-        return movies.size();
+        idGenerator.set(1);
     }
 }
